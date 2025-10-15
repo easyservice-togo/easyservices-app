@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <title>Easy services app</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta content name="description" />
+    <meta content name="author" />
+
+    <!-- App favicon -->
+    <link rel="shortcut icon" href="assets/images/favicon.ico">
+
+    <!-- Theme Config Js -->
+    <script src="assets/js/config.js"></script>
+
+    <!-- App css -->
+    <link href="assets/css/app.min.css" rel="stylesheet" type="text/css" id="app-style" />
+
+    <!-- Icons css -->
+    <link href="assets/css/icons.min.css" rel="stylesheet" type="text/css" />
+    <link href="assets/css/loader.css" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/intl-tel-input@25.7.0/build/css/intlTelInput.css">
+    <style>
+        /* Styles pour la timeline - Version compacte */
+        .timeline {
+            display: flex;
+            justify-content: space-between;
+            margin: 0 0 1.5rem 0;
+            position: relative;
+            padding: 0 0.5rem;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            top: 12px;
+            left: 10%;
+            right: 10%;
+            height: 2px;
+            background-color: #e9ecef;
+            z-index: 1;
+        }
+
+        .timeline-step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            z-index: 2;
+            flex: 1;
+            max-width: 33.333%;
+        }
+
+        .timeline-step .step-number {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background-color: #e9ecef;
+            color: #6c757d;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-bottom: 0.25rem;
+            font-size: 0.75rem;
+        }
+
+        .timeline-step.active .step-number {
+            background-color: #3b71ca;
+            color: white;
+        }
+
+        .timeline-step.completed .step-number {
+            background-color: #14a44d;
+            color: white;
+        }
+
+        .step-label {
+            font-size: 0.75rem;
+            color: #6c757d;
+            text-align: center;
+            line-height: 1.2;
+            padding: 0 0.25rem;
+        }
+
+        .timeline-step.active .step-label {
+            color: #3b71ca;
+            font-weight: bold;
+        }
+
+        .timeline-step.completed .step-label {
+            color: #14a44d;
+        }
+
+        /* Styles pour les étapes du formulaire */
+        .form-step {
+            display: none;
+        }
+
+        .form-step.active {
+            display: block;
+        }
+
+        /* Styles pour les options de méthode d'envoi */
+        .method-options {
+            display: flex;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .method-option {
+            flex: 1;
+            border: 2px solid #e9ecef;
+            border-radius: 0.5rem;
+            padding: 0.75rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .method-option:hover {
+            border-color: #3b71ca;
+        }
+
+        .method-option.selected {
+            border-color: #3b71ca;
+            background-color: rgba(59, 113, 202, 0.05);
+        }
+
+        .method-icon {
+            font-size: 1.5rem;
+            margin-bottom: 0.25rem;
+            color: #6c757d;
+        }
+
+        .method-option.selected .method-icon {
+            color: #3b71ca;
+        }
+
+        /* Styles pour le code OTP */
+        .otp-inputs {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .otp-input {
+            width: 2.5rem;
+            height: 2.5rem;
+            text-align: center;
+            font-size: 1rem;
+            border: 1px solid #ced4da;
+            border-radius: 0.375rem;
+        }
+
+        .otp-input:focus {
+            border-color: #3b71ca;
+            outline: 0;
+            box-shadow: 0 0 0 0.2rem rgba(59, 113, 202, 0.25);
+        }
+
+        /* Styles pour les boutons de navigation */
+        .form-navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 1.5rem;
+        }
+
+        .resend-code {
+            text-align: center;
+            margin-top: 1rem;
+        }
+
+        .resend-code button {
+            background: none;
+            border: none;
+            color: #3b71ca;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+
+        .resend-code button:hover {
+            color: #2a5ca0;
+        }
+
+        .resend-code button:disabled {
+            color: #6c757d;
+            cursor: not-allowed;
+        }
+
+        .countdown {
+            color: #6c757d;
+            font-size: 0.75rem;
+        }
+
+        /* Ajustements pour le contenu principal */
+        .auth-brand {
+            margin-bottom: 0.5rem;
+        }
+
+        .auth-brand h4 {
+            margin-bottom: 0.5rem;
+        }
+
+        .auth-brand p {
+            margin-bottom: 0;
+        }
+
+
+        /*  */
+    </style>
+</head>
+
+<body class="authentication-bg" >
+    <div class="account-pages pt-2 pt-sm-5 pb-4 pb-sm-5 position-relative">
+        <div class="container" style="margin-top: -25px;">
+            <div class="row justify-content-center">
+                <div class="col-xxl-7 col-lg-6">
+                    <div class="card bg-transparent mb-0 " style="box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;">
+                        <!-- Logo -->
+                        <div class="auth-brand">
+                            <a href="index.html" class="logo-light">
+                                <img src="assets/images/logo.png" alt="logo" height="25">
+                            </a>
+                            <a href="index.html" class="logo-dark text-center">
+                                <img src="assets/images/logo-dark.png" alt="dark logo" height="25">
+                            </a>
+                            <h4 class="pb-0 fw-bold mt-3 ">Ouverture de compte</h4>
+                            <p class=" text-muted ">
+                                Entrez votre nom, prénom, adresse email,
+                                votre mot de passe... pour créer votre
+                                compte
+                            </p>
+                        </div>
+
+                        <!-- Timeline -->
+                        <div class="timeline" style="margin-top:-10px;">
+                            <div class="timeline-step completed" id="step-1">
+                                <div class="step-number">1</div>
+                                <div class="step-label">Informations</div>
+                            </div>
+                            <div class="timeline-step" id="step-2">
+                                <div class="step-number">2</div>
+                                <div class="step-label">Méthode d'envoi</div>
+                            </div>
+                            <div class="timeline-step" id="step-3">
+                                <div class="step-number">3</div>
+                                <div class="step-label">Code OTP</div>
+                            </div>
+                        </div>
+
+                        <div class="card-body p-3 p-sm-4" style="margin-top: -20px;;">
+                            <form action="#" id="registration-form">
+                                <!-- Étape 1: Informations personnelles -->
+                                <div class="form-step active" id="step-1-form">
+                                    <!-- Nom et Prénom sur la même ligne -->
+                                    <div class="row g-2 mb-2">
+                                        <div class="col-md-6">
+                                            <label for="nom" class="form-label">Nom</label>
+                                            <input class="form-control" type="text" id="nom"
+                                                placeholder="Entrez votre nom" required>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label for="prenom" class="form-label">Prénom</label>
+                                            <input class="form-control" type="text" id="prenom"
+                                                placeholder="Entrez votre prénom" required>
+                                        </div>
+                                    </div>
+
+                                    <!-- Email et Téléphone -->
+                                    <div class="row g-2 mb-2">
+                                        <div class="col-md-6">
+                                            <label for="emailaddress" class="form-label">Email</label>
+                                            <input class="form-control" type="email" id="emailaddress" required
+                                                placeholder="Entrez votre email">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label for="telephone" class="form-label">Téléphone</label>
+                                            <div class="iti-container">
+                                                <input class="form-control" type="tel" id="telephone" required
+                                                    placeholder="Entrez votre numéro de téléphone">
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="row g-2 mb-3">
+                                        <div class="col-md-6">
+                                            <label for="pays" class="form-label">Pays</label>
+                                            <select class="form-control" id="pays" required>
+                                                <option value="">Sélectionnez votre pays</option>
+                                                <option value="tg">Togo</option>
+                                                <option value="fr">France</option>
+                                                <option value="us">États-Unis</option>
+                                                <option value="gb">Royaume-Uni</option>
+                                            </select>
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <label for="password" class="form-label">Mot de passe</label>
+                                            <div class="input-group input-group-merge">
+                                                <input type="password" id="password" class="form-control"
+                                                    placeholder="Entrez votre mot de passe">
+                                                <div class="input-group-text" data-password="false">
+                                                    <span class="password-eye"></span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="mb-2 d-flex align-items-center justify-content-between">
+                                        <button class="btn btn-primary" type="button" id="generate-code-btn">Générer le
+                                            code de validation</button>
+                                        <a href="auth-login.html"
+                                            class="link-primary link-offset-2 link-underline-opacity-0 link-underline-opacity-100-hover">
+                                            <b> J'ai un compte</b>
+                                        </a>
+                                    </div>
+                                </div>
+
+                                <!-- Étape 2: Sélection de la méthode d'envoi -->
+                                <div class="form-step" id="step-2-form">
+                                    <h5 class="mb-3 text-center">Choisissez comment recevoir votre code de validation
+                                    </h5>
+
+                                    <div class="method-options">
+                                        <div class="method-option" data-method="email">
+                                            <div class="method-icon">✉️</div>
+                                            <div class="small">Par email</div>
+                                        </div>
+                                        <div class="method-option" data-method="sms">
+                                            <div class="method-icon">📱</div>
+                                            <div class="small">Par SMS</div>
+                                        </div>
+                                        <div class="method-option" data-method="both">
+                                            <div class="method-icon">✉️📱</div>
+                                            <div class="small">Les deux</div>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-navigation">
+                                        <button type="button" class="btn btn-outline-secondary"
+                                            id="back-to-step-1">Retour</button>
+                                        <button type="button" class="btn btn-primary" id="send-code-btn"
+                                            disabled>Envoyer le code</button>
+                                    </div>
+                                </div>
+
+                                <!-- Étape 3: Saisie du code OTP -->
+                                <div class="form-step" id="step-3-form">
+                                    <h5 class="mb-3 text-center">Entrez le code de validation</h5>
+                                    <p class="text-muted mb-3 text-center">Un code à 6 chiffres a été envoyé à votre
+                                        <span id="method-display" class="fw-semibold"></span>
+                                    </p>
+
+                                    <div class="otp-inputs">
+                                        <input type="text" class="otp-input" maxlength="1" data-index="1">
+                                        <input type="text" class="otp-input" maxlength="1" data-index="2">
+                                        <input type="text" class="otp-input" maxlength="1" data-index="3">
+                                        <input type="text" class="otp-input" maxlength="1" data-index="4">
+                                        <input type="text" class="otp-input" maxlength="1" data-index="5">
+                                        <input type="text" class="otp-input" maxlength="1" data-index="6">
+                                    </div>
+
+                                    <div class="resend-code">
+                                        <button type="button" id="resend-code-btn" disabled>Renvoyer le code</button>
+                                        <div class="countdown" id="countdown">(60 secondes)</div>
+                                    </div>
+
+                                    <div class="form-navigation">
+                                        <button type="button" class="btn btn-outline-secondary"
+                                            id="back-to-step-2">Retour</button>
+                                        <button type="button" class="btn btn-primary" id="validate-code-btn"
+                                            disabled>Valider le code</button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div> <!-- end card-body -->
+                    </div>
+                </div> <!-- end col -->
+            </div> <!-- end row -->
+        </div> <!-- end container -->
+    </div>
+    <!-- end page -->
+
+    <footer class="footer footer-alt fw-medium">
+        <span class="bg-body">
+            <script>document.write(new Date().getFullYear())</script> © Easy services
+        </span>
+    </footer>
+
+    <!-- Vendor js -->
+    <script src="assets/js/vendor.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/intl-tel-input@25.7.0/build/js/intlTelInput.min.js"></script>
+
+    <!-- App js -->
+    <script src="assets/js/app.min.js"></script>
+    <script>
+        // Masquer le loader après le chargement
+        window.addEventListener('load', function () {
+            setTimeout(function () {
+                if (document.getElementById('pageLoader')) {
+                    document.getElementById('pageLoader').style.display = 'none';
+                }
+            }, 2000);
+        });
+
+        // Initialisation du sélecteur de téléphone
+        document.addEventListener('DOMContentLoaded', function () {
+            const input = document.querySelector("#telephone");
+            let init = window.intlTelInput(input, {
+                preferredCountries: ['fr'],
+                nationalMode: false,
+                separateDialCode: true,
+                loadUtils: () => import("https://cdn.jsdelivr.net/npm/intl-tel-input@25.7.0/build/js/utils.js")
+            });
+
+            // Gestion de la timeline et des étapes
+            // Variables globales
+            let selectedMethod = '';
+            let countdownInterval;
+            let countdownSeconds = 60;
+
+            // Éléments DOM
+            const step1Form = document.getElementById('step-1-form');
+            const step2Form = document.getElementById('step-2-form');
+            const step3Form = document.getElementById('step-3-form');
+
+            const step1 = document.getElementById('step-1');
+            const step2 = document.getElementById('step-2');
+            const step3 = document.getElementById('step-3');
+
+            const generateCodeBtn = document.getElementById('generate-code-btn');
+            const backToStep1Btn = document.getElementById('back-to-step-1');
+            const sendCodeBtn = document.getElementById('send-code-btn');
+            const backToStep2Btn = document.getElementById('back-to-step-2');
+            const validateCodeBtn = document.getElementById('validate-code-btn');
+            const resendCodeBtn = document.getElementById('resend-code-btn');
+            const countdownElement = document.getElementById('countdown');
+            const methodDisplay = document.getElementById('method-display');
+
+            const methodOptions = document.querySelectorAll('.method-option');
+            const otpInputs = document.querySelectorAll('.otp-input');
+
+            // Navigation entre les étapes
+            if (generateCodeBtn) {
+                generateCodeBtn.addEventListener('click', function () {
+                    // Validation des champs de l'étape 1
+                    const nom = document.getElementById('nom').value;
+                    const prenom = document.getElementById('prenom').value;
+                    const email = document.getElementById('emailaddress').value;
+                    const telephone = document.getElementById('telephone').value;
+                    const pays = document.getElementById('pays').value;
+                    const password = document.getElementById('password').value;
+
+                    if (!nom || !prenom || !email || !telephone || !pays || !password) {
+                        alert('Veuillez remplir tous les champs obligatoires');
+                        return;
+                    }
+
+                    // Passage à l'étape 2
+                    step1Form.classList.remove('active');
+                    step2Form.classList.add('active');
+
+                    step1.classList.add('completed');
+                    step2.classList.add('active');
+                });
+            }
+
+            if (backToStep1Btn) {
+                backToStep1Btn.addEventListener('click', function () {
+                    step2Form.classList.remove('active');
+                    step1Form.classList.add('active');
+
+                    step2.classList.remove('active');
+                    step1.classList.remove('completed');
+                });
+            }
+
+            if (sendCodeBtn) {
+                sendCodeBtn.addEventListener('click', function () {
+                    // Passage à l'étape 3
+                    step2Form.classList.remove('active');
+                    step3Form.classList.add('active');
+
+                    step2.classList.add('completed');
+                    step3.classList.add('active');
+
+                    // Mise à jour de l'affichage de la méthode
+                    let methodText = '';
+                    switch (selectedMethod) {
+                        case 'email':
+                            methodText = 'email';
+                            break;
+                        case 'sms':
+                            methodText = 'téléphone';
+                            break;
+                        case 'both':
+                            methodText = 'email et téléphone';
+                            break;
+                    }
+                    methodDisplay.textContent = methodText;
+
+                    // Démarrage du compte à rebours
+                    startCountdown();
+                });
+            }
+
+            if (backToStep2Btn) {
+                backToStep2Btn.addEventListener('click', function () {
+                    step3Form.classList.remove('active');
+                    step2Form.classList.add('active');
+
+                    step3.classList.remove('active');
+                    step2.classList.remove('completed');
+
+                    // Arrêt du compte à rebours
+                    clearInterval(countdownInterval);
+                    resendCodeBtn.disabled = true;
+                });
+            }
+
+            if (validateCodeBtn) {
+                validateCodeBtn.addEventListener('click', function () {
+                    // Validation du code OTP
+                    const otpCode = getOtpCode();
+
+                    if (otpCode.length !== 6) {
+                        alert('Veuillez entrer un code à 6 chiffres');
+                        return;
+                    }
+
+                    // Simulation de validation réussie
+                    alert('Code validé avec succès! Votre compte a été créé.');
+                    // Ici, vous pouvez rediriger vers une autre page ou soumettre le formulaire
+                });
+            }
+
+            // Sélection de la méthode d'envoi
+            methodOptions.forEach(option => {
+                option.addEventListener('click', function () {
+                    // Désélectionner toutes les options
+                    methodOptions.forEach(opt => opt.classList.remove('selected'));
+
+                    // Sélectionner l'option cliquée
+                    this.classList.add('selected');
+                    selectedMethod = this.getAttribute('data-method');
+
+                    // Activer le bouton d'envoi
+                    sendCodeBtn.disabled = false;
+                });
+            });
+
+            // Gestion des champs OTP
+            otpInputs.forEach(input => {
+                input.addEventListener('input', function () {
+                    const index = parseInt(this.getAttribute('data-index'));
+
+                    // Passer au champ suivant si une valeur est entrée
+                    if (this.value && index < 6) {
+                        otpInputs[index].focus();
+                    }
+
+                    // Vérifier si tous les champs sont remplis
+                    checkOtpCompletion();
+                });
+
+                input.addEventListener('keydown', function (e) {
+                    const index = parseInt(this.getAttribute('data-index'));
+
+                    // Gérer la touche retour arrière
+                    if (e.key === 'Backspace' && !this.value && index > 1) {
+                        otpInputs[index - 2].focus();
+                    }
+                });
+            });
+
+            // Fonction pour récupérer le code OTP complet
+            function getOtpCode() {
+                let code = '';
+                otpInputs.forEach(input => {
+                    code += input.value;
+                });
+                return code;
+            }
+
+            // Fonction pour vérifier si tous les champs OTP sont remplis
+            function checkOtpCompletion() {
+                const code = getOtpCode();
+                validateCodeBtn.disabled = code.length !== 6;
+            }
+
+            // Fonction pour démarrer le compte à rebours
+            function startCountdown() {
+                countdownSeconds = 60;
+                updateCountdownDisplay();
+                resendCodeBtn.disabled = true;
+
+                countdownInterval = setInterval(function () {
+                    countdownSeconds--;
+                    updateCountdownDisplay();
+
+                    if (countdownSeconds <= 0) {
+                        clearInterval(countdownInterval);
+                        resendCodeBtn.disabled = false;
+                        countdownElement.textContent = '';
+                    }
+                }, 1000);
+            }
+
+            // Fonction pour mettre à jour l'affichage du compte à rebours
+            function updateCountdownDisplay() {
+                countdownElement.textContent = `(${countdownSeconds} secondes)`;
+            }
+
+            // Gestion du renvoi de code
+            if (resendCodeBtn) {
+                resendCodeBtn.addEventListener('click', function () {
+                    // Simulation du renvoi de code
+                    alert('Un nouveau code a été envoyé à votre ' + methodDisplay.textContent);
+
+                    // Réinitialiser les champs OTP
+                    otpInputs.forEach(input => {
+                        input.value = '';
+                    });
+                    validateCodeBtn.disabled = true;
+
+                    // Redémarrer le compte à rebours
+                    startCountdown();
+                });
+            }
+        });
+    </script>
+</body>
+
+</html>

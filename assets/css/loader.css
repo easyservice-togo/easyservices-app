@@ -1,0 +1,78 @@
+.loader-container {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 9999;
+}
+
+.loader-card {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    border: 1px solid #e9ecef;
+}
+
+.money-transfer-loader {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.account-circle {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: bold;
+    color: white;
+}
+
+.account-a {
+    background: #1e3e89;
+}
+
+.account-b {
+    background: #e45b05;
+}
+
+.money-moving {
+    position: relative;
+    width: 60px;
+    height: 12px;
+}
+
+.coin {
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    background: gold;
+    border-radius: 50%;
+    animation: moveCoin 1.5s infinite ease-in-out;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+}
+
+.coin:nth-child(1) { animation-delay: 0s; }
+.coin:nth-child(2) { animation-delay: 0.3s; }
+.coin:nth-child(3) { animation-delay: 0.6s; }
+
+@keyframes moveCoin {
+    0% {
+        left: 0;
+        opacity: 0;
+        transform: scale(0.8);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1.1);
+    }
+    100% {
+        left: 48px;
+        opacity: 0;
+        transform: scale(0.8);
+    }
+}
